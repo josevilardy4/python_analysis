@@ -1,0 +1,77 @@
+---
+title: "M2"
+output: html_notebook
+---
+
+
+## Packages
+
+```{r}
+library(forecast)
+library(urca)
+library(xts)
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library( plyr )
+library(lubridate)
+library(astsa)
+library(forecast)
+library(readxl)
+library(httr)
+library(timeSeries)
+library(ggfortify)
+library(rlang)
+library(prophet)
+library(DT)
+
+
+
+```
+
+
+##Gather the data
+
+```{r}
+
+data <-  as.data.frame(read_xlsx('Data.xlsx', 
+                   sheet = 1))
+
+```
+
+
+
+
+
+## Prophet
+
+```{r}
+
+traindf <- data%>%dplyr::select(Date, CPAPUSA)%>%dplyr::filter(Date < "2019-08-01")
+test <- data%>%dplyr::select(Date, CPAPUSA)%>%dplyr::filter(Date > "2019-08-01")
+
+
+```
+
+
+```{r}
+
+
+colnames(traindf) <- c("ds", "y")
+
+
+m <- prophet(seasonality.mode = "additive", daily.seasonality = TRUE)
+
+m <- fit.prophet(m, traindf)
+
+future <- make_future_dataframe(m, periods = 61, include_history = FALSE)
+fcst <- predict(m, future)
+
+
+ accuracy(fcst$yhat,test$CPAPUSA)["Test set", "MAE"]
+ accuracy(fcst$yhat,test$CPAPUSA)["Test set", "MAPE"]
+ accuracy(fcst$yhat,test$CPAPUSA)["Test set", "RMSE"]
+
+
+```
+
